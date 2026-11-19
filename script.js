@@ -21,10 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileBar.className = 'mobile-sticky';
     mobileBar.innerHTML = `
         <div>
-            <small>One-Time Payment</small>
+            <small>100 Prompts • One-Time</small>
             <strong>$17</strong>
         </div>
-        <a href="${finalCheckoutUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary">Get Access — $17</a>
+        <a href="${finalCheckoutUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary">Get 100 Prompts — $17</a>
     `;
     document.body.appendChild(mobileBar);
 
@@ -68,10 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. 5-Category Marketing Prompt Preview Switcher + Copy button
+    // 3. 5-Category Marketing Prompt Preview Switcher + Copy button (with reliable fallback)
     const promptSamples = {
         hooks: {
-            badge: 'CATEGORY 01 / AD & VIDEO HOOKS',
+            badge: 'CATEGORY 01 OF 05 • 20 PROMPTS INCLUDED',
             title: 'Scroll-Stopping First 3 Seconds Hook Generator',
             deliverable: 'Concrete Deliverable: 10 tested short-form & paid ad hooks ready to record or launch.',
             code: `Act as a direct-response performance marketer. Create 10 scroll-stopping opening hooks (under 12 words each) for [PRODUCT/OFFER] targeting [TARGET AUDIENCE] who struggle with [MAIN PAIN POINT].
@@ -85,7 +85,7 @@ Use these 4 angles:
 For each hook, output: 1) Spoken Hook, 2) On-Screen Text, and 3) Visual Cue for the first 3 seconds.`
         },
         emails: {
-            badge: 'CATEGORY 02 / EMAIL CAMPAIGNS',
+            badge: 'CATEGORY 02 OF 05 • 20 PROMPTS INCLUDED',
             title: 'High-Click Conversion Email Sequence Builder',
             deliverable: 'Concrete Deliverable: 5-email sequence with subject lines, preview text, body copy & CTAs.',
             code: `Act as an email conversion copywriter. Write a 5-email sequence promoting [OFFER NAME] ($17) to [AUDIENCE SEGMENT].
@@ -100,7 +100,7 @@ Structure across the 5 emails:
 Include 3 subject line options + preview text for each email.`
         },
         creatives: {
-            badge: 'CATEGORY 03 / AD CREATIVES',
+            badge: 'CATEGORY 03 OF 05 • 20 PROMPTS INCLUDED',
             title: 'Multi-Format Paid Ad Creative Matrix',
             deliverable: 'Concrete Deliverable: Ready-to-brief ad concepts with headlines, primary text & visual direction.',
             code: `Act as a paid media creative strategist. Generate 4 distinct ad creative concepts for [PRODUCT/OFFER] aimed at [PLATFORM: Meta / TikTok / YouTube].
@@ -112,7 +112,7 @@ For each concept, provide:
 - Visual Shot List & Frame-by-Frame Action`
         },
         funnels: {
-            badge: 'CATEGORY 04 / SALES FUNNELS',
+            badge: 'CATEGORY 04 OF 05 • 20 PROMPTS INCLUDED',
             title: 'End-to-End Funnel Architecture & Copy Prompt',
             deliverable: 'Concrete Deliverable: Landing hero, value stack, objection blocks & post-click follow-up flow.',
             code: `Act as a conversion funnel architect. Design a direct-response funnel for [PRODUCT/OFFER] priced at [PRICE].
@@ -125,7 +125,7 @@ Map out:
 5) Next-step upsell or retention touchpoint`
         },
         offers: {
-            badge: 'CATEGORY 05 / OFFERS & ANGLES',
+            badge: 'CATEGORY 05 OF 05 • 20 PROMPTS INCLUDED',
             title: 'Irresistible Offer Positioning & Angle Refiner',
             deliverable: 'Concrete Deliverable: Sharper value proposition, comparison points & high-clarity positioning.',
             code: `Act as an offer strategist. Sharpen the positioning for [PRODUCT/OFFER] so it stands out against [STATUS QUO / ALTERNATIVE].
@@ -139,45 +139,91 @@ Output:
     };
 
     const catTabs = document.querySelectorAll('.cat-tab');
+    const promptSandbox = document.getElementById('promptSandbox');
     const sandboxBadge = document.getElementById('sandboxBadge');
     const sandboxTitle = document.getElementById('sandboxTitle');
     const sandboxDeliverable = document.getElementById('sandboxDeliverable');
     const promptCode = document.getElementById('promptCode');
     const copyPromptBtn = document.getElementById('copyPromptBtn');
+    const copyBtnText = document.getElementById('copyBtnText');
+    let resetCopyTimer = null;
+
+    const resetCopyState = () => {
+        if (resetCopyTimer) clearTimeout(resetCopyTimer);
+        if (copyPromptBtn) copyPromptBtn.classList.remove('copied');
+        if (copyBtnText) copyBtnText.textContent = 'Copy Prompt';
+    };
 
     catTabs.forEach((tab) => {
         tab.addEventListener('click', () => {
-            catTabs.forEach((t) => t.classList.remove('active'));
+            catTabs.forEach((t) => {
+                t.classList.remove('active');
+                t.setAttribute('aria-selected', 'false');
+            });
             tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
 
             const key = tab.getAttribute('data-cat');
             const item = key ? promptSamples[key] : null;
             if (item) {
-                if (sandboxBadge) sandboxBadge.textContent = item.badge;
-                if (sandboxTitle) sandboxTitle.textContent = item.title;
-                if (sandboxDeliverable) sandboxDeliverable.textContent = item.deliverable;
-                if (promptCode) promptCode.textContent = item.code;
-                if (copyPromptBtn) {
-                    copyPromptBtn.textContent = 'Copy Prompt';
-                    copyPromptBtn.classList.remove('copied');
+                if (promptCode) promptCode.style.opacity = '0.35';
+                setTimeout(() => {
+                    if (sandboxBadge) sandboxBadge.textContent = item.badge;
+                    if (sandboxTitle) sandboxTitle.textContent = item.title;
+                    if (sandboxDeliverable) sandboxDeliverable.textContent = item.deliverable;
+                    if (promptCode) {
+                        promptCode.textContent = item.code;
+                        promptCode.style.opacity = '1';
+                    }
+                }, 90);
+
+                if (promptSandbox) {
+                    promptSandbox.classList.add('pulse-switch');
+                    setTimeout(() => promptSandbox.classList.remove('pulse-switch'), 350);
                 }
+                resetCopyState();
             }
         });
     });
 
+    const copyTextWithFallback = async (text) => {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+        const tempArea = document.createElement('textarea');
+        tempArea.value = text;
+        tempArea.setAttribute('readonly', '');
+        tempArea.style.position = 'fixed';
+        tempArea.style.opacity = '0';
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempArea);
+    };
+
     if (copyPromptBtn && promptCode) {
         copyPromptBtn.addEventListener('click', async () => {
+            const textToCopy = (promptCode.textContent || '').trim();
+            if (!textToCopy) return;
+
             try {
-                await navigator.clipboard.writeText(promptCode.textContent || '');
-                copyPromptBtn.textContent = '✓ Copied';
+                await copyTextWithFallback(textToCopy);
                 copyPromptBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyPromptBtn.textContent = 'Copy Prompt';
-                    copyPromptBtn.classList.remove('copied');
-                }, 1800);
+                if (copyBtnText) copyBtnText.textContent = '✓ Prompt Copied!';
             } catch {
-                copyPromptBtn.textContent = 'Select & Copy';
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(promptCode);
+                if (selection) {
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+                if (copyBtnText) copyBtnText.textContent = 'Selected (Press Ctrl+C)';
             }
+
+            if (resetCopyTimer) clearTimeout(resetCopyTimer);
+            resetCopyTimer = setTimeout(resetCopyState, 2200);
         });
     }
 
@@ -196,7 +242,7 @@ Output:
     );
     sections.forEach((sec) => glowObserver.observe(sec));
 
-    // 5. Animated counter for "100+" prompts stat
+    // 5. Animated counter for "100" prompts stat
     const setupCounter = document.getElementById('setupCounter');
     if (setupCounter) {
         const target = Number(setupCounter.getAttribute('data-target') || 100);
@@ -273,18 +319,18 @@ Output:
 
     const modeMap = {
         ads: {
-            badge: 'HOOKS & ADS',
+            badge: '100 PROMPTS',
             headline: 'HOOKS, EMAILS, ADS & FUNNELS',
-            caption: 'Structured prompts for real marketing deliverables'
+            caption: '100 structured prompts for real marketing deliverables'
         },
         funnels: {
-            badge: 'EMAILS & FUNNELS',
-            headline: 'FULL FUNNEL & EMAIL COPY',
-            caption: 'Sequences, angles, and conversion steps connected'
+            badge: '05 CATEGORIES',
+            headline: '20 PROMPTS PER MARKETING TRACK',
+            caption: 'Hooks, emails, ad creatives, sales funnels & offer angles'
         },
         value: {
             badge: '$17 ONE-TIME',
-            headline: '$17 FULL ACCESS • 5 TRACKS',
+            headline: '$17 FULL ACCESS • 100 PROMPTS',
             caption: 'No recurring subscription • 7-day money-back guarantee'
         }
     };
@@ -360,3 +406,4 @@ Output:
         }
     });
 });
+                                      
