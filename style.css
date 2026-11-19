@@ -423,6 +423,11 @@ body {
     border-radius: 24px;
     padding: 28px;
     backdrop-filter: blur(16px);
+    transition: border-color 0.25s ease, transform 0.2s ease;
+}
+
+.prompt-sandbox.pulse-switch {
+    border-color: rgba(52, 211, 153, 0.65);
 }
 
 .sandbox-meta {
@@ -448,12 +453,15 @@ body {
 }
 
 .copy-prompt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--border);
     color: #fff;
-    padding: 9px 15px;
+    padding: 10px 16px;
     border-radius: 10px;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -462,8 +470,8 @@ body {
 
 .copy-prompt-btn:hover,
 .copy-prompt-btn.copied {
-    background: rgba(16, 185, 129, 0.18);
-    border-color: rgba(52, 211, 153, 0.55);
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(52, 211, 153, 0.65);
     color: var(--accent-bright);
 }
 
@@ -479,6 +487,8 @@ body {
     white-space: pre-wrap;
     word-break: break-word;
     margin-bottom: 20px;
+    user-select: all;
+    transition: opacity 0.18s ease;
 }
 
 .sandbox-footer {
@@ -1155,4 +1165,4 @@ body {
     .site-footer {
         padding-bottom: 92px;
     }
-}
+    }
